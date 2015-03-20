@@ -1,10 +1,13 @@
 class Railz
   def call(env)
-    code    = 200 # HTTP response code
-    headers = {"Content-Type" => "text/plain"} # HTTP response headers
-    body    = env.map{ |k, v| "#{k}=#{v}" }.join("\n") # Response body
+    @request  = Rack::Request.new(env)
+    @response = Rack::Response.new
 
-    [code, headers, [body]]
+    @response.status = 200
+    @response['Content-Type'] = 'text/html'
+    @response.body   = @request.params.map{ |k, v| "#{k}=#{v}" }
+
+    @response.finish
   end
 end
 
