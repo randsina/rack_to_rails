@@ -1,3 +1,41 @@
+class Routes
+  def initialize(&block)
+    @routes = {
+      get:  {},
+      post: {},
+      put:  {},
+      delete: {}
+    }
+
+    block.call(self) # Call methods from block
+
+    self
+  end
+
+  def get(path, options={})
+    @routes[:get][path] = options
+  end
+
+  def post(path, options={})
+    @routes[:post][path] = options
+  end
+
+  def process!(request)
+    meth = request.request_method.downcase.to_sym
+    @routes[meth][request.path_info]
+  end
+end
+
+class PostsController
+  def index
+    ["Listing posts", 200]
+  end
+
+  def create
+    ["Create post", 200]
+  end
+end
+
 class Railz
   def call(env)
     @request  = Rack::Request.new(env)
@@ -9,17 +47,21 @@ class Railz
   end
 
   def process_request
-    case @request.path_info
-      when '/'
-        @response.status = 200
-        @response.body   = [html("Index")]
-      when '/hello'
-        @response.status = 200
-        @response.body   = [html("Hello world")]
-      else
-        @response.status = 404
-        @response.body   = [html("Not found")]
+    routes = Routes.new do |map| # Here: map == routes.self
+      map.get  "/posts", controller: PostsController, action: "index"
+      map.post "/posts", controller: PostsController, action: "create"
     end
+
+    route = routes.process!(@request)
+
+    title, status = begin
+      route[:controller].new.send(route[:action].to_sym)
+    rescue
+      ["Not found", 404]
+    end
+
+    @response.status = status
+    @response.body   = [html(title)]
     @response['Content-Type'] = 'text/html'
   end
 
