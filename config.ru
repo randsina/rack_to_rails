@@ -1,14 +1,5 @@
-class Railz
-  def call(env)
-    @request  = Rack::Request.new(env)
-    @response = Rack::Response.new
+$LOAD_PATH.unshift(File.dirname(__FILE__)) # Add current directory to load paths
 
-    @response.status = 200
-    @response['Content-Type'] = 'text/html'
-    @response.body   = @request.params.map{ |k, v| "#{k}=#{v}" }
-
-    @response.finish
-  end
-end
+require 'railz'
 
 run Railz.new
