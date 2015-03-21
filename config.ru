@@ -1,5 +1,7 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__)) # Add current directory to load paths
 
-require 'railz'
+require 'rack'
+require 'railz/application'
+require 'app/boot'
 
-run Railz.new
+run HelloWorld.new
